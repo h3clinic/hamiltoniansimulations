@@ -22,12 +22,12 @@ HTML = """
 <body>
   <form method="get">
     n = <input type="number" name="n" value="{{ n }}" min="1" max="6">
-    max vibration = <input type="number" name="v" value="{{ max_total_vibration }}" min="0" max="20">
+    max vibration = <input type="number" name="v" value="{{ max_vibration }}" min="0" max="20">
     <button type="submit">generate</button>
   </form>
 
   {% if basis_states %}
-  <p>{{ total }} basis states for n = {{ n }}; max total vibration = {{ max_total_vibration }}</p>
+  <p>{{ total }} basis states for n = {{ n }}; max vibration = {{ max_vibration }}</p>
   <ol>
     {% for i, basis_state in basis_states %}
     <li>{{ basis_state|safe }}</li>
@@ -43,15 +43,15 @@ HTML = """
 def index():
     n = int(request.args.get("n", 2))
     n = max(1, min(n, 6))
-    max_total_vibration = int(request.args.get("v", n - 1))
-    max_total_vibration = max(0, min(max_total_vibration, 20))
-    basis_states = generate_basis_states(n, max_total_vibration)
+    max_vibration = int(request.args.get("v", n - 1))
+    max_vibration = max(0, min(max_vibration, 20))
+    basis_states = generate_basis_states(n, max_vibration)
     formatted = [format_basis_state(basis_state) for basis_state in basis_states]
 
     return render_template_string(
         HTML,
         n=n,
-        max_total_vibration=max_total_vibration,
+        max_vibration=max_vibration,
         basis_states=list(enumerate(formatted, start=1)),
         total=len(basis_states),
     )
