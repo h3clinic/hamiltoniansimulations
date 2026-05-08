@@ -7,11 +7,14 @@ app = Flask(__name__)
 def generate_basis_states(n):
     particles = list(range(1, n + 1))
     energy_levels = list(range(n))
+    max_total_vibration = n - 1
     basis_states = []
 
     for k in range(1, n + 1):
         for chosen_particles in combinations(particles, k):
             for chosen_levels in combinations(energy_levels, k):
+                if sum(chosen_levels) > max_total_vibration:
+                    continue
                 for assigned_levels in permutations(chosen_levels):
                     basis_state = tuple(zip(chosen_particles, assigned_levels))
                     basis_states.append(basis_state)
@@ -51,7 +54,7 @@ HTML = """
   </form>
 
   {% if basis_states %}
-  <p>{{ total }} basis states for n = {{ n }}</p>
+  <p>{{ total }} basis states for n = {{ n }}; max total vibration = {{ max_total_vibration }}</p>
   <ol>
     {% for i, basis_state in basis_states %}
     <li>{{ basis_state|safe }}</li>
@@ -73,10 +76,11 @@ def index():
     return render_template_string(
         HTML,
         n=n,
+        max_total_vibration=n - 1,
         basis_states=list(enumerate(formatted, start=1)),
         total=len(basis_states),
     )
 
 
 if __name__ == "__main__":
-  app.run(debug=False, port=5050)
+    app.run(debug=False, port=5050)
