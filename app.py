@@ -1,29 +1,34 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request
 from itertools import combinations, permutations
-from math import comb, factorial
 
 app = Flask(__name__)
 
-def generate_states(n):
-    particles = list(range(1, n + 1))
-    energy_levels = list(range(n))
-    states = []
-    for size in range(1, n + 1):
-        for chosen_particles in combinations(particles, size):
-            for chosen_levels in combinations(energy_levels, size):
-                for level_order in permutations(chosen_levels):
-                    state = tuple(zip(chosen_particles, level_order))
-                    states.append(state)
-    return states
 
-def expected_count(n):
-    return sum(comb(n, k) ** 2 * factorial(k) for k in range(1, n + 1))
+def generate_configurations(n):
+    particles = [f"p{i}" for i in range(1, n + 1)]
+    energy_levels = [f"E{i}" for i in range(n)]
+    configurations = []
+
+    for k in range(1, n + 1):
+        for chosen_particles in combinations(particles, k):
+            for chosen_levels in combinations(energy_levels, k):
+                for assigned_levels in permutations(chosen_levels):
+                    configuration = tuple(zip(chosen_particles, assigned_levels))
+                    configurations.append(configuration)
+
+    return configurations
+
+
+def format_configuration(configuration):
+    pairs = ", ".join(f"({particle}, {energy})" for particle, energy in configuration)
+    return "{" + pairs + "}"
+
 
 HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-  <title>states</title>
+  <title>configurations</title>
   <style>
     body { font-family: monospace; padding: 40px; background: white; color: #111; }
     form { margin-bottom: 24px; }
@@ -39,11 +44,11 @@ HTML = """
     <button type="submit">generate</button>
   </form>
 
-  {% if states %}
-  <p>{{ total }} states for n = {{ n }}</p>
+  {% if configurations %}
+  <p>{{ total }} configurations for n = {{ n }}</p>
   <ol>
-    {% for i, state in states %}
-    <li>{{ state }}</li>
+    {% for i, configuration in configurations %}
+    <li>{{ configuration }}</li>
     {% endfor %}
   </ol>
   {% endif %}
@@ -51,17 +56,21 @@ HTML = """
 </html>
 """
 
+
 @app.route("/")
 def index():
-    from flask import request
     n = int(request.args.get("n", 2))
     n = max(1, min(n, 6))
-    states = generate_states(n)
-    return render_template_string(HTML,
+    configurations = generate_configurations(n)
+    formatted = [format_configuration(configuration) for configuration in configurations]
+
+    return render_template_string(
+        HTML,
         n=n,
-        states=list(enumerate(states, start=1)),
-        total=len(states)
+        configurations=list(enumerate(formatted, start=1)),
+        total=len(configurations),
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
