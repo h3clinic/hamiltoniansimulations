@@ -1,36 +1,8 @@
 from flask import Flask, render_template_string, request
-from itertools import combinations, permutations
+
+from states import format_basis_state, generate_basis_states
 
 app = Flask(__name__)
-
-
-def generate_basis_states(n):
-    particles = list(range(1, n + 1))
-    energy_levels = list(range(n))
-    max_total_vibration = n - 1
-    basis_states = []
-
-    for k in range(1, n + 1):
-        for chosen_particles in combinations(particles, k):
-            for chosen_levels in combinations(energy_levels, k):
-                if sum(chosen_levels) > max_total_vibration:
-                    continue
-                for assigned_levels in permutations(chosen_levels):
-                    basis_state = tuple(zip(chosen_particles, assigned_levels))
-                    basis_states.append(basis_state)
-
-    return basis_states
-
-
-def format_basis_state(basis_state):
-    ordered_pairs = sorted(basis_state, key=lambda pair: pair[1]) if len(basis_state) > 1 else basis_state
-    entries = []
-
-    for index, (particle, level) in enumerate(ordered_pairs):
-        particle_label = f"{particle}'" if index > 0 else str(particle)
-        entries.append(f"{particle_label},{level}")
-
-    return "|" + ";".join(entries) + "⟩"
 
 
 HTML = """

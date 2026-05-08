@@ -1,34 +1,34 @@
-from itertools import combinations, permutations
-from math import comb, factorial
+from itertools import combinations, product
+from math import comb
 
 
 def generate_basis_states(n):
     """
-    Generate all valid basis states for n particles across n energy levels.
+    Generate all valid basis states for n particles across n vibrational levels.
 
     Rules:
-    - Each particle can occupy one energy level.
+    - Each particle can occupy one vibrational level.
     - No duplicate particle in the same basis state.
-    - No duplicate energy level in the same basis state.
+    - Vibrational levels can repeat across different particles.
+    - Include only single states and pairwise mixed states.
     - Total vibrational excitation in one basis state is at most n - 1.
 
-    This keeps n = 3 capped at total vibration 2, so states like
-    |1,1;3',2⟩ are excluded because 1 + 2 = 3.
+    For n = 3, |1,1;3',1⟩ is valid because 1 + 1 = 2,
+    while |1,1;3',2⟩ is excluded because 1 + 2 = 3.
     """
     particles = list(range(1, n + 1))
-    energy_levels = list(range(n))
+    vibration_levels = list(range(n))
     max_total_vibration = n - 1
 
     basis_states = []
 
-    for k in range(1, n + 1):
+    for k in range(1, min(n, 2) + 1):
         for chosen_particles in combinations(particles, k):
-            for chosen_levels in combinations(energy_levels, k):
-                if sum(chosen_levels) > max_total_vibration:
+            for assigned_levels in product(vibration_levels, repeat=k):
+                if sum(assigned_levels) > max_total_vibration:
                     continue
-                for assigned_levels in permutations(chosen_levels):
-                    basis_state = tuple(zip(chosen_particles, assigned_levels))
-                    basis_states.append(basis_state)
+                basis_state = tuple(zip(chosen_particles, assigned_levels))
+                basis_states.append(basis_state)
 
     return basis_states
 
@@ -46,19 +46,7 @@ def format_basis_state(basis_state):
 
 def expected_count(n):
     """Count states with total vibrational excitation <= n - 1."""
-    energy_levels = list(range(n))
-    max_total_vibration = n - 1
-    total = 0
-
-    for k in range(1, n + 1):
-        valid_level_sets = [
-            levels
-            for levels in combinations(energy_levels, k)
-            if sum(levels) <= max_total_vibration
-        ]
-        total += comb(n, k) * len(valid_level_sets) * factorial(k)
-
-    return total
+    return sum(comb(n, k) * comb((n - 1) + k, k) for k in range(1, min(n, 2) + 1))
 
 
 if __name__ == "__main__":
