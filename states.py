@@ -2,7 +2,7 @@ from itertools import combinations, product
 from math import comb
 
 
-def generate_basis_states(n):
+def generate_basis_states(n, max_total_vibration=None):
     """
     Generate all valid basis states for n particles across n vibrational levels.
 
@@ -11,14 +11,16 @@ def generate_basis_states(n):
     - No duplicate particle in the same basis state.
     - Vibrational levels can repeat across different particles.
     - Include only single states and pairwise mixed states.
-    - Total vibrational excitation in one basis state is at most n - 1.
+    - Total vibrational excitation in one basis state is configurable.
 
     For n = 3, |1,1;3',1⟩ is valid because 1 + 1 = 2,
-    while |1,1;3',2⟩ is excluded because 1 + 2 = 3.
+    while |1,1;3',2⟩ is excluded when max_total_vibration = 2.
     """
+    if max_total_vibration is None:
+        max_total_vibration = n - 1
+
     particles = list(range(1, n + 1))
     vibration_levels = list(range(n))
-    max_total_vibration = n - 1
 
     basis_states = []
 
@@ -44,24 +46,38 @@ def format_basis_state(basis_state):
     return "|" + ";".join(entries) + "⟩"
 
 
-def expected_count(n):
-    """Count states with total vibrational excitation <= n - 1."""
-    return sum(comb(n, k) * comb((n - 1) + k, k) for k in range(1, min(n, 2) + 1))
+def expected_count(n, max_total_vibration=None):
+    """Count pairwise basis states with configurable total vibrational cap."""
+    if max_total_vibration is None:
+        max_total_vibration = n - 1
+
+    total = 0
+    for k in range(1, min(n, 2) + 1):
+        allowed_assignments = sum(
+            1
+            for levels in product(range(n), repeat=k)
+            if sum(levels) <= max_total_vibration
+        )
+        total += comb(n, k) * allowed_assignments
+
+    return total
 
 
 if __name__ == "__main__":
     n = 2
-    basis_states = generate_basis_states(n)
+    max_total_vibration = n - 1
+    basis_states = generate_basis_states(n, max_total_vibration)
 
-    print(f"Basis states for n = {n}:\n")
+    print(f"Basis states for n = {n}, max total vibration = {max_total_vibration}:\n")
     for i, basis_state in enumerate(basis_states, start=1):
         print(f"  {i}. {format_basis_state(basis_state)}")
 
     print(f"\nTotal states: {len(basis_states)}")
-    print(f"Formula check:       {expected_count(n)}")
+    print(f"Formula check:       {expected_count(n, max_total_vibration)}")
 
     print("\nScaling:")
     for n in range(2, 6):
-        count = len(generate_basis_states(n))
-        formula = expected_count(n)
-        print(f"  n = {n}  →  {count} states  (formula: {formula})")
+        max_total_vibration = n - 1
+        count = len(generate_basis_states(n, max_total_vibration))
+        formula = expected_count(n, max_total_vibration)
+        print(f"  n = {n}, max vibration = {max_total_vibration}  →  {count} states  (formula: {formula})")
