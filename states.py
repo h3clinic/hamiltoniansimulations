@@ -1,5 +1,4 @@
 from itertools import combinations, product
-from math import comb
 
 
 def generate_basis_states(n, max_total_vibration=None):
@@ -12,9 +11,11 @@ def generate_basis_states(n, max_total_vibration=None):
     - Vibrational levels can repeat across different particles.
     - Include only single states and pairwise mixed states.
     - Total vibrational excitation in one basis state is configurable.
+    - Pairwise mixed states with no vibration are redundant and removed.
 
     For n = 3, |1,1;3',1⟩ is valid because 1 + 1 = 2,
     while |1,1;3',2⟩ is excluded when max_total_vibration = 2.
+    Also, |1,0;2',0⟩ is excluded because it carries no mixed vibration.
     """
     if max_total_vibration is None:
         max_total_vibration = n - 1
@@ -29,10 +30,17 @@ def generate_basis_states(n, max_total_vibration=None):
             for assigned_levels in product(vibration_levels, repeat=k):
                 if sum(assigned_levels) > max_total_vibration:
                     continue
+                if is_redundant_mixed_state(assigned_levels):
+                    continue
                 basis_state = tuple(zip(chosen_particles, assigned_levels))
                 basis_states.append(basis_state)
 
     return basis_states
+
+
+def is_redundant_mixed_state(assigned_levels):
+    """A mixed state with all zero vibrations adds no new basis state."""
+    return len(assigned_levels) > 1 and all(level == 0 for level in assigned_levels)
 
 
 def format_basis_state(basis_state):
@@ -51,16 +59,7 @@ def expected_count(n, max_total_vibration=None):
     if max_total_vibration is None:
         max_total_vibration = n - 1
 
-    total = 0
-    for k in range(1, min(n, 2) + 1):
-        allowed_assignments = sum(
-            1
-            for levels in product(range(n), repeat=k)
-            if sum(levels) <= max_total_vibration
-        )
-        total += comb(n, k) * allowed_assignments
-
-    return total
+    return len(generate_basis_states(n, max_total_vibration))
 
 
 if __name__ == "__main__":
