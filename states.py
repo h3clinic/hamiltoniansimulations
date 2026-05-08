@@ -3,10 +3,10 @@ from itertools import combinations, product
 
 def generate_basis_states(n, max_total_vibration=None):
     """
-    Generate all valid basis states for n particles across n vibrational levels.
+    Generate all valid basis states for n particles across configurable vibrational levels.
 
     Rules:
-    - Each particle can occupy one vibrational level.
+    - Each particle can occupy vibration levels 0..max_total_vibration.
     - No duplicate particle in the same basis state.
     - Vibrational levels can repeat across different particles.
     - Include only single states and pairwise mixed states.
@@ -21,7 +21,7 @@ def generate_basis_states(n, max_total_vibration=None):
         max_total_vibration = n - 1
 
     particles = list(range(1, n + 1))
-    vibration_levels = list(range(n))
+    vibration_levels = list(range(max_total_vibration + 1))
 
     basis_states = []
 
