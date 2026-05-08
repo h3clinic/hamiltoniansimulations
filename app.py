@@ -1,6 +1,6 @@
 from flask import Flask, render_template_string, request
 
-from states import format_basis_state, generate_basis_states
+from states import generate_basis_states
 
 app = Flask(__name__)
 
@@ -46,13 +46,12 @@ def index():
     max_vibration = int(request.args.get("v", n - 1))
     max_vibration = max(0, min(max_vibration, 20))
     basis_states = generate_basis_states(n, max_vibration)
-    formatted = [format_basis_state(basis_state) for basis_state in basis_states]
 
     return render_template_string(
         HTML,
         n=n,
         max_vibration=max_vibration,
-        basis_states=list(enumerate(formatted, start=1)),
+      basis_states=list(enumerate(basis_states, start=1)),
         total=len(basis_states),
     )
 
