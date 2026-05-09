@@ -19,7 +19,6 @@ HTML = """
     input[type=number] { width: 60px; font-family: monospace; font-size: 1rem; border: 1px solid #ccc; padding: 4px 6px; }
     button { font-family: monospace; padding: 6px 14px; cursor: pointer; }
     .info { color: #888; margin-bottom: 8px; font-size: 0.85rem; }
-    .formula { color: #555; margin-bottom: 8px; font-size: 0.85rem; }
     .truncated { color: #c00; margin-bottom: 8px; font-size: 0.8rem; }
     ol { padding-left: 1.4rem; line-height: 2; }
   </style>
@@ -37,7 +36,6 @@ HTML = """
 
   {% if total is not none %}
   <p class="info">{{ total }} basis states &nbsp;|&nbsp; n = {{ n }}, v = {{ v }}</p>
-  <p class="formula">Formula: ({{ v }}+1)<sup>{{ n }}</sup> = {{ total }} &nbsp;&nbsp; each mode: v&#x1D62; &isin; {0, &hellip;, {{ v }}}</p>
   {% if truncated %}
   <p class="truncated">Showing first {{ preview }} of {{ total }} states. Reduce n or v to see all.</p>
   {% endif %}
